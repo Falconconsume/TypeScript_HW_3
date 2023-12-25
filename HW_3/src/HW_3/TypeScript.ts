@@ -1,3 +1,4 @@
+
 type PayInfo = {
     balance: number,
     debit: number,
@@ -13,8 +14,8 @@ type Employee = {
     status: 'active' | 'inactive' | 'unpaid leave',
     salary: number,
     payInfo: PayInfo,
-    numberOfCard:number,
-    previousInfo?: PreviousEmployee,
+    numberOfCard: number,
+    previousInfo ? : PreviousEmployee,
 }
 
 type Domain = {
@@ -94,7 +95,7 @@ class Company {
                 surname: employee.surname,
                 salary: employee.salary,
                 numberOfCard: employee.numberOfCard,
-            } 
+            }
             employee.previousInfo = previousEmployee;
             this.previousHired.push(employee);
             const department = this.departments.find((d) => d.name === employee.department.name);
@@ -130,9 +131,9 @@ class Accounting extends Department {
         for (const employee of this.employees) {
             if (employee.status === 'active') {
                 this.removeFromBalance(employee.salary);
-                if(employee.payInfo.source === 'internal') {
-                    employee.payInfo.credit += employee.salary; 
-                } else if(employee.payInfo.source === 'external') {
+                if (employee.payInfo.source === 'internal') {
+                    employee.payInfo.credit += employee.salary;
+                } else if (employee.payInfo.source === 'external') {
                     employee.payInfo.debit += employee.salary;
                 }
             }
