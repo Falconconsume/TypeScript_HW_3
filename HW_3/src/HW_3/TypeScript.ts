@@ -94,7 +94,7 @@ class Company {
                 name: employee.name,
                 surname: employee.surname,
                 salary: employee.salary,
-                numberOfCard: employee.numberOfCard,
+                numberOfCard: employee.numberOfCard
             }
             employee.previousInfo = previousEmployee;
             this.previousHired.push(employee);
