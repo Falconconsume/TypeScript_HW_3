@@ -8,7 +8,8 @@
     "./src/HW_7",
     "./src/HW_8/",
     "./src/HW_9",
-    "./src/HW_10"
+    "./src/HW_10",
+    "./src/HW_11"
   ],
   "exclude": [
     "node_modules",
