@@ -2,18 +2,18 @@ function palidrom(num: number) {
     let steps: number = 0;
     let maxSteps: number = 1000;
 
-    function reversedNumber(num:number) {
+    function reversedNumber(num: number) {
         return parseInt(String(num).split('').reverse().join(''), 10);
     }
 
-    while(num !== reversedNumber(num)) {
+    while (num !== reversedNumber(num)) {
         num += reversedNumber(num);
         ++steps;
-        if(steps === maxSteps) return { message: 'The number hasn\'t got a palindrome' };
+        if (steps === maxSteps) return {message: 'The number hasn\'t got a palindrome'};
     }
-    
-    return { result: num, steps: steps };
-} 
+
+    return {result: num, steps: steps};
+}
 
 console.log(palidrom(193));
 
