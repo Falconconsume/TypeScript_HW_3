@@ -82,7 +82,7 @@ class TodoList {
     }
 }
 
-class searchNote extends TodoList {
+class SearchNote extends TodoList {
 
     constructor() {
         super()
