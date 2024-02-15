@@ -1,108 +1,122 @@
+// Вам необхідно написати додаток Todo list. У списку нотаток повинні бути методи для додавання нового запису, 
+// видалення, редагування та отримання повної інформації про нотатку за ідентифікатором, а так само отримання списку всіх нотаток. 
+// Крім цього, у користувача має бути можливість позначити нотаток, як виконаний, і отримання інформації про те, 
+// скільки всього нотаток у списку і скільки залишилося невиконаними. Нотатки не повинні бути порожніми.
+
+// Кожний нотаток має назву, зміст, дату створення і редагування та статус. Нотатки бувають двох типів. 
+// Дефолтні та такі, які вимагають підтвердження при ридагуванні.
+// Окремо необхідно розширити поведінку списку та додати можливість пошуку нотатка за ім'ям або змістом.
+// Також окремо необхідно розширити список можливістю сортування нотаток за статусом або часом створення.
+
+type idNote = number;
 
 interface INote {
-    note: string;
-    dateOfCreation: Date;
-    dateOfEditing: Date;
-    type: `default` | `require`;   
-    status: string; 
+    title: string;
+    content: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    id: idNote;
+    isCompleted: boolean;
 }
 
-class TodoList {
-    protected listNotes: INote[];
+type NoteUpdated = Partial<Pick<INote, 'title' | 'content'>>;
 
-    constructor() {
-        this.listNotes = [];
+interface ITodoList {
+    addNote(title: string, content: string): void;
+    deleteNote(id: idNote): void;
+    updateNote(id: idNote, payload: NoteUpdated): INote;
+    getNoteById(id: idNote) : INote | undefined;
+    getNotes(): INote[];
+    findByIndex(id: idNote): number;
+    getUncompletedNotes(): INote[];
+    searchNotes(query: string): INote[];
+    sortNotesByStatus(): INote[];
+    sortNotesByCreationTime(): INote[];
+}
+
+class TodoList implements ITodoList {
+    public notes: INote[] = [];
+
+    public addNote(title: string, content: string): void {
+        const note: INote = new Note(title, content);
+        this.notes.push(note);
     }
 
-    public createNote(note: string, type: `default` | `require`): void {
-        if (note.trim() === '') {
-            console.log('Note cannot be empty');
-            return;
-        }
-        this.listNotes.push({note, status: 'not completed',dateOfCreation: new Date(),dateOfEditing: new Date(), type});
-        console.log(`You added the ${note} to your list!`)
-    }
-
-    public deleteNote(index: number): void {
-        if (index >= 0 && index < this.listNotes.length) {
-            const deletedNote = this.listNotes.splice(index, 1);
-            console.log(`You deleted the note: ${deletedNote[0].note}`);
+    public deleteNote(id: idNote): void {
+        const index = this.findByIndex(id);
+        if (index !== -1) {
+            this.notes.splice(index, 1);
         } else {
-            console.log(`Note with index ${index} does not exist`);
+            throw new Error('Нотатка не знайдена');
         }
     }
 
-    public editNote(index: number, newNote: string): void {
-        if (index >= 0 && index < this.listNotes.length) {
-            const oldNote = this.listNotes[index].note;
-            this.listNotes[index].note = newNote;
-            console.log(`You changed ${oldNote} to ${newNote}!`);
+    public updateNote(id: idNote, payload: NoteUpdated): INote {
+        const note = this.getNoteById(id);
+        if (note) {
+            note.title = payload.title || note.title;
+            note.content = payload.content || note.content;
+            note.updatedAt = new Date();
+            return note;
         } else {
-            console.log(`Note with index ${index} does not exist`);
+            throw new Error('Нотатка не знайдена');
         }
     }
 
-    public showNotes(): void {
-        console.log(`Your list:`)
-        this.listNotes.forEach((note: INote, index: number) => {
-            console.log(`${index + 1} ${note.note} ${note.status}`);
-        })
+    public getNoteById(id: idNote): INote | undefined {
+        return this.notes.find(note => note.id === id);
     }
 
-    public pinNote(index: number): void {
-        if (index >= 0 && index < this.listNotes.length) {
-            this.listNotes[index].status = 'completed';
-            console.log(`You marked note ${this.listNotes[index].note} as completed!`);
-        } else {
-            console.log(`Note with index ${index} does not exist`);
-        }
+    public getNotes(): INote[] {
+        return this.notes;
     }
 
-    public countsOfNotes(): void {
-        console.log(`Total notes: ${this.listNotes.length}`);
+    public getUncompletedNotes(): INote[] {
+        return this.notes.filter(note => !note.isCompleted);
     }
 
-    public howManyNotesNotCompleted(): void {
-        let sumCompletesOfNotes = 0;
-        this.listNotes.forEach(note => {
-            if(note.status === 'not completed') {
-                sumCompletesOfNotes += 1;
+    public searchNotes(query: string): INote[] {
+        return this.notes.filter(note => note.title.includes(query) || note.content.includes(query));
+    }
+
+    public sortNotesByStatus(): INote[] {
+        return [...this.notes].sort((a, b) => Number(a.isCompleted) - Number(b.isCompleted));
+    }
+
+    public sortNotesByCreationTime(): INote[] {
+        return [...this.notes].sort((a, b) => {
+            if (a.createdAt && b.createdAt) {
+                return Number(new Date(a.createdAt)) - Number(new Date(b.createdAt));
+            } else {
+                return 0;
             }
-        })
-        console.log(`Uncompleted notes: ${sumCompletesOfNotes}`);
+        });
     }
-    public sortNotesByStatus(): void {
-        this.listNotes.sort((a, b) => a.status.localeCompare(b.status));
-        console.log('Notes sorted by status');
-    }
+    
 
-    public sortNotesByCreationTime(): void {
-        this.listNotes.sort((a, b) => a.dateOfCreation.getTime() - b.dateOfCreation.getTime());
-        console.log('Notes sorted by creation time');
+    public findByIndex(id: idNote): number {
+        return this.notes.findIndex(note => note.id === id);
     }
 }
 
-class SearchNote extends TodoList {
+class BaseNote implements INote {
+    id: idNote;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    isCompleted: boolean;
 
-    constructor() {
-        super()
+    constructor(public title: string, public content: string) {
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+        this.isCompleted = false;
+        this.id = Math.random();
     }
+}
 
-    public findNoteByName(name: string): void {
-        const foundNote = this.listNotes.find(note => note.note === name);
-        if (foundNote) {
-            console.log(`Found note: ${foundNote.note}`);
-        } else {
-            console.log(`No note found with name: ${name}`);
-        }
-    }
-
-    public findNoteByContent(content: string): void {
-        const foundNote = this.listNotes.find(note => note.note.includes(content));
-        if (foundNote) {
-            console.log(`Found note: ${foundNote.note}`);
-        } else {
-            console.log(`No note found with content: ${content}`);
-        }
+class Note extends BaseNote {
+    public update(payload: NoteUpdated): void {
+        this.title = payload.title || this.title;
+        this.content = payload.content || this.content;
+        this.updatedAt = new Date()
     }
 }
