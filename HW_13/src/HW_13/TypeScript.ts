@@ -17,6 +17,7 @@ interface INote {
     updatedAt: Date | null;
     id: idNote;
     isCompleted: boolean;
+    update(payload: NoteUpdated): void;
 }
 
 type NoteUpdated = Partial<Pick<INote, 'title' | 'content'>>;
@@ -25,41 +26,55 @@ interface ITodoList {
     addNote(title: string, content: string): void;
     deleteNote(id: idNote): void;
     updateNote(id: idNote, payload: NoteUpdated): INote;
-    getNoteById(id: idNote) : INote | undefined;
+    getNoteById(id: idNote): INote | undefined;
     getNotes(): INote[];
     findByIndex(id: idNote): number;
     getUncompletedNotes(): INote[];
     searchNotes(query: string): INote[];
     sortNotesByStatus(): INote[];
     sortNotesByCreationTime(): INote[];
+    getTotalNotes(): number;
+    getRemainingUncompletedNotes(): number;
 }
 
 class TodoList implements ITodoList {
     public notes: INote[] = [];
+    public uncompletedNotesCounter: number = 0;
 
     public addNote(title: string, content: string): void {
-        const note: INote = new Note(title, content);
+        const note: INote = new Note(title, content, this);
         this.notes.push(note);
+        if (!note.isCompleted) {
+            this.uncompletedNotesCounter++;
+        }
     }
 
     public deleteNote(id: idNote): void {
         const index = this.findByIndex(id);
         if (index !== -1) {
+            const note = this.notes[index];
+            if (!note.isCompleted) {
+                this.uncompletedNotesCounter--;
+            }
             this.notes.splice(index, 1);
         } else {
-            throw new Error('Нотатка не знайдена');
+            throw new Error('Note not found');
         }
     }
 
     public updateNote(id: idNote, payload: NoteUpdated): INote {
         const note = this.getNoteById(id);
         if (note) {
-            note.title = payload.title || note.title;
-            note.content = payload.content || note.content;
-            note.updatedAt = new Date();
+            const isCompletedBeforeUpdate = note.isCompleted;
+            note.update(payload);
+            if (isCompletedBeforeUpdate && !note.isCompleted) {
+                this.uncompletedNotesCounter++;
+            } else if (!isCompletedBeforeUpdate && note.isCompleted) {
+                this.uncompletedNotesCounter--;
+            }
             return note;
         } else {
-            throw new Error('Нотатка не знайдена');
+            throw new Error('Note not found');
         }
     }
 
@@ -92,31 +107,41 @@ class TodoList implements ITodoList {
             }
         });
     }
-    
+
+    public getTotalNotes(): number {
+        return this.notes.length;
+    }
+
+    public getRemainingUncompletedNotes(): number {
+        return this.uncompletedNotesCounter;
+    }
 
     public findByIndex(id: idNote): number {
         return this.notes.findIndex(note => note.id === id);
     }
 }
 
-class BaseNote implements INote {
-    id: idNote;
-    createdAt: Date | null;
-    updatedAt: Date | null;
-    isCompleted: boolean;
+class Note implements INote {
+    public createdAt: Date | null;
+    public updatedAt: Date | null;
 
-    constructor(public title: string, public content: string) {
+    constructor(
+        public title: string,
+        public content: string,
+        public todoList: TodoList,
+        public id: idNote = Math.random(),
+        public isCompleted: boolean = false
+    ) {
         this.createdAt = new Date();
         this.updatedAt = new Date();
-        this.isCompleted = false;
-        this.id = Math.random();
+        if (!isCompleted) {
+            this.todoList.uncompletedNotesCounter++;
+        }
     }
-}
 
-class Note extends BaseNote {
     public update(payload: NoteUpdated): void {
         this.title = payload.title || this.title;
         this.content = payload.content || this.content;
-        this.updatedAt = new Date()
+        this.updatedAt = new Date();
     }
 }
