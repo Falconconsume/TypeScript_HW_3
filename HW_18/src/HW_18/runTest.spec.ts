@@ -1,0 +1,7 @@
+import './tests/AccountingDepartment.spec'
+import './tests/Administration.spec'
+import './tests/AdvertisementDepartment.spec'
+import './tests/Animals.spec'
+import './tests/Casa.spec'
+import './tests/SellmentTickets.spec'
+import './tests/ZooFacade.spec'
