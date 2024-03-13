@@ -1,5 +1,5 @@
 export class Administration implements IAdministration {
-    private employeesList: IEmployee[] = []
+    public employeesList: IEmployee[] = []
 
     addEmployee(employee: IEmployee) {
         this.employeesList.push(employee)
